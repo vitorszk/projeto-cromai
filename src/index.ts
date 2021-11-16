@@ -16,7 +16,7 @@ const apiController = new ApiController()
 const upload = multer()
 
 apiRouter.post("/upload", upload.single(""), apiController.upload)
-apiRouter.post("/write-message-on-image", apiController)
+apiRouter.post("/write-message-on-image", apiController.writeMessage)
 apiRouter.get("/get-image", apiController)
 apiRouter.get("/decode-message-from-image", apiController)
 

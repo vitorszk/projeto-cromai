@@ -1,3 +1,4 @@
 export type FileInputDTO = {
-    name: string | undefined
+    name?: string 
+    path?: string
 }
