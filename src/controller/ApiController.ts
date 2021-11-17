@@ -28,10 +28,25 @@ export class ApiController {
             const apiBusiness = new ApiBusiness();
             const result = await apiBusiness.writeMessage(input)
 
-            res.status(200).send({message: "Message written!", result, input})
+            res.status(200).send({message: "Message written!", result})
         } catch (err: unknown) {
             if (err instanceof Error) 
                 return res.status(400).send(err.message)
+        }
+    }
+
+    async decodeMessage(req: Request, res: Response) {
+        try {
+            const input: FileInputDTO = {
+                name: req.file!.originalname
+            }
+
+            const apiBusiness = new ApiBusiness()
+            const result = await apiBusiness.upload(input)
+
+            res.status(200).send({message: "Message decoded: ", result})
+        } catch {
+
         }
     }
 }

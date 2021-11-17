@@ -1,4 +1,5 @@
 import { FileInputDTO } from "../model/File";
+import { binToStr } from "../utils/binToStr";
 import { bytesToInt } from "../utils/bytesToInt";
 
 
@@ -24,7 +25,7 @@ export class ApiBusiness {
                 }
 
                 if (this.offset === 0) {
-                    const id = (String.fromCharCode(chunk[0], chunk[1]))                    
+                    const id = (String.fromCharCode(chunk[0], chunk[1]))
                     if (id !== 'BM') {
                         throw new Error("Image is not a Bitmap file")
                     }
@@ -58,5 +59,46 @@ export class ApiBusiness {
             }
         })
         readStream.pipe(hideMessage('01000001').pipe(writeStream))
+    }
+
+    async decodeMessage(input: FileInputDTO) {
+        const { Transform } = require('stream')
+        const fs = require('fs')
+        const readStream = fs.createReadStream(input)
+
+        const showMessage = () => new Transform({
+            transform: function (chunk: any, encoding: any, callback: () => void) {
+                if (!this.offset) {
+                    this.offset = 0
+                }
+
+                if (this.offset === 0) {
+                    const id = (String.fromCharCode(chunk[0], chunk[1]))
+                    if (id !== 'BM') {
+                        throw new Error("Image is not a Bitmap file")
+                    }
+
+                    const dataOffset = bytesToInt([
+                        chunk[10],
+                        chunk[11],
+                        chunk[12],
+                        chunk[13]
+                    ])
+
+                    let message = '01000001'
+
+                    for (let i = dataOffset; i < chunk.length; i++) {
+                        message += chunk[i] % 2
+                    }
+
+                    binToStr(message)
+                }
+                this.offset += chunk.length
+                callback()
+            }
+        })
+
+        readStream.pipe(showMessage())
+
     }
 }
