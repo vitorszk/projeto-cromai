@@ -13,12 +13,17 @@ app.use(cors())
 const apiRouter = express.Router()
 const apiController = new ApiController()
 
-const upload = multer()
+const storage = multer.diskStorage({
+  filename: (req, file, callback) => {
+    callback(null, Date.now()+'-'+file.originalname)
+  }
+})
+const upload = multer({storage})
 
-apiRouter.post("/upload", upload.single(""), apiController.upload)
-apiRouter.post("/write-message-on-image", apiController)
+apiRouter.post("/upload", upload.single('img'), apiController.upload)
+apiRouter.post("/write-message-on-image", apiController.writeMessage)
 apiRouter.get("/get-image", apiController)
-apiRouter.get("/decode-message-from-image", apiController)
+apiRouter.get("/decode-message-from-image", apiController.decodeMessage)
 
 const PORT = process.env.PORT || 3003
 
