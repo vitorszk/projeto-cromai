@@ -1,4 +1,7 @@
 export type FileInputDTO = {
-    name?: string 
-    path?: string
+    path: string
+}
+
+export type GetFileDTO = {
+    name: string
 }

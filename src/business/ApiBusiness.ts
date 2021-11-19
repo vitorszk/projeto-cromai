@@ -1,10 +1,10 @@
-import { FileInputDTO } from "../model/File";
+import { FileInputDTO, GetFileDTO } from "../model/File";
 import { binToStr } from "../utils/binToStr";
 import { bytesToInt } from "../utils/bytesToInt";
-
+import os from 'os'
 
 export class ApiBusiness {
-    async upload(input: FileInputDTO) {
+    async upload(input: GetFileDTO) {
         if (!input.name) {
             throw new Error("Image was not uploaded!")
         }
@@ -13,9 +13,9 @@ export class ApiBusiness {
     async writeMessage(input: FileInputDTO) {
         const { Transform } = require('stream')
         const fs = require('fs')
-        const file = input
+        const { path } = input
         const outputFile = 'result-output.bmp'
-        const readStream = fs.createReadStream(file)
+        const readStream = fs.createReadStream(path)
         const writeStream = fs.createWriteStream(outputFile)
 
         const hideMessage = (message: string) => new Transform({
@@ -58,10 +58,18 @@ export class ApiBusiness {
                 callback()
             }
         })
-        readStream.pipe(hideMessage('01000001').pipe(writeStream))
+        const newPath = os.tmpdir() + "/teste5.bmp"
+        console.log(hideMessage('01000001'))
+
+        fs.writeFile(newPath, Buffer.from(readStream.pipe(hideMessage('01000001').pipe(writeStream)).toString(), 'base64').toString(),'base64', function(err: any) {
+            if(err) {
+                return console.log(err);
+            }
+        }); 
+
     }
 
-    async decodeMessage(input: FileInputDTO) {
+    async decodeMessage(input: GetFileDTO) {
         const { Transform } = require('stream')
         const fs = require('fs')
         const readStream = fs.createReadStream(input)
@@ -97,8 +105,12 @@ export class ApiBusiness {
                 callback()
             }
         })
+        return readStream.pipe(showMessage())
+    }
 
-        readStream.pipe(showMessage())
-
+    async getImage(input: GetFileDTO) {
+        if (!input.name) {
+            throw new Error("Image not found")
+        }
     }
 }
